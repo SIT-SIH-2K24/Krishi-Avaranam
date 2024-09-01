@@ -27,18 +27,56 @@ model2 = genai.GenerativeModel(
         "response_mime_type": "text/plain",
     },
     system_instruction=(
-        "You are a helpful personal assistant chatbot"
+        "You are a helpful personal assistant chatbot specializing in agriculture-related topics. "
+        "Provide detailed information and assistance related to farming, crop management, soil health, pest control, "
+        "and agricultural technologies. Ensure all responses are relevant to agriculture and respond to greetings."
     ),
 )
 
 chat = model2.start_chat()
 
+# Define agriculture and disease-related terms
+agriculture_terms = [
+    "farming", "crop management", "soil health", "pest control", "agricultural technologies",
+    "disease", "plant disease", "crop disease", "fungus", "bacteria", "virus", "blight", "mildew", "rot"
+    'Apple__Apple_scab', 'Apple_Black_rot', "Apple_Cedar_apple_rust", 'Apple__healthy',
+                        'Blueberry__healthy', 'Cherry(including_sour)_Powdery_mildew',  'sooty blotch and flyspeck',
+                        'Cherry_(including_sour)healthy', 'Corn(maize)_Cercospora_leaf_spot Gray_leaf_spot', 
+                        'Corn_(maize)Common_rust', 'Corn_(maize)Northern_Leaf_Blight', 'Corn(maize)_healthy', 
+                        'Grape__Black_rot', 'Grape_Esca(Black_Measles)', 'Grape__Leaf_blight(Isariopsis_Leaf_Spot)', 
+                        'Grape__healthy', 'Orange_Haunglongbing(Citrus_greening)', 'Peach___Bacterial_spot',
+                        'Peach__healthy', 'Pepper,_bell_Bacterial_spot', 'Pepper,_bell__healthy', 
+                        'Potato__Early_blight', 'Potato_Late_blight', 'Potato__healthy', 
+                        'Raspberry__healthy', 'Soybean_healthy', 'Squash__Powdery_mildew', 
+                        'Strawberry__Leaf_scorch', 'Strawberry_healthy', 'Tomato__Bacterial_spot', 
+                        'Tomato__Early_blight', 'Tomato_Late_blight', 'Tomato__Leaf_Mold', 
+                        'Tomato__Septoria_leaf_spot', 'Tomato__Spider_mites Two-spotted_spider_mite', 
+                        'Tomato__Target_Spot', 'Tomato_Tomato_Yellow_Leaf_Curl_Virus', 'Tomato__Tomato_mosaic_virus',
+                        'Tomato___healthy'
+]
+
+# Define common greetings
+greetings = [
+    "hello","Hello", "hi","Hi", "hey", "Hey","good morning","Good morning" ,"good afternoon","Good afternoon", "good evening", "Good evening" "Namaste","namaste","namaskara","Namaskara", "greetings"
+]
+
+def contains_terms(text, terms_list):
+    # Convert text to lower case and check for any relevant terms
+    text_lower = text.lower()
+    return any(term in text_lower for term in terms_list)
+
 def chat_with_me(question):
     try:
-        response = chat.send_message(question)
-        return response.text 
+        if contains_terms(question, greetings):
+            return "Hello! How can I assist you today?"
+        elif contains_terms(question, agriculture_terms):
+            response = chat.send_message(question)
+            return response.text 
+        else:
+            return "Sorry, I can only provide information related to agriculture."
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 # Tensorflow Model Prediction
 def model_prediction(test_image):
@@ -49,31 +87,56 @@ def model_prediction(test_image):
     predictions = model.predict(input_arr)
     return np.argmax(predictions)  # return index of max element
 
-# Sidebar
+background_image_url = "https://th.bing.com/th/id/OIP.LAOaWuloBHvVV7ZQRBwcowHaE7?rs=1&pid=ImgDetMain"  # Replace with your background image URL
+st.markdown(f"""
+    <style>
+    .main {{
+        background-image: url('{background_image_url}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: white;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+# Sidebar content above "Connect with Us"
 st.sidebar.title("Dashboard")
 
 app_mode = st.sidebar.selectbox("Select Page", ["Home", "About", "Disease Recognition", "Chat Support"])
+
+# Other sidebar content...
+
+# Spacer to push "Connect with Us" to the bottom
+st.sidebar.markdown("<br><br><br><br><br><br><br><br><br><br><br><br><br>", unsafe_allow_html=True)
+
+# "Connect with Us" at the bottom inside the sidebar
 st.sidebar.markdown("""
-### Connect with Us
-<a href="https://github.com/SIT-SIH-2K24" target="_blank">
-    <img src="https://img.icons8.com/material-outlined/24/000000/github.png" style="vertical-align: middle;"/>
-</a>
-<a href="https://www.linkedin.com/in/your-linkedin-profile/" target="_blank">
-    <img src="https://img.icons8.com/material-outlined/24/000000/linkedin.png" style="vertical-align: middle;"/>
-</a>
-<a href="https://www.instagram.com/your-instagram-profile/" target="_blank">
-    <img src="https://img.icons8.com/material-outlined/24/000000/instagram-new.png" style="vertical-align: middle;"/>
-</a>
+### 
+<div style="position: relative; bottom: 0; width: 100%; text-align: center;">
+    <h4>Connect with Us</h4>
+    <a href="https://github.com/SIT-SIH-2K24/Krishi-Avaranam/tree/master" target="_blank">
+        <img src="https://img.icons8.com/material-outlined/24/ffffff/github.png" style="vertical-align: middle;"/>
+    </a>
+    <a href="https://www.linkedin.com/in/your-linkedin-profile/" target="_blank">
+        <img src="https://img.icons8.com/material-outlined/24/ffffff/linkedin.png" style="vertical-align: middle;"/>
+    </a>
+    <a href="https://www.instagram.com/your-instagram-profile/" target="_blank">
+        <img src="https://img.icons8.com/material-outlined/24/ffffff/instagram-new.png" style="vertical-align: middle;"/>
+    </a>
+</div>
 """, unsafe_allow_html=True)
 
-# Main Page
+
+
+
 if app_mode == "Home":
     st.markdown("""
     <style>
     .typewriter h1 {
         font-family: 'Courier New', Courier, monospace;
         font-size: 3.5em;
-        color: white;
+        color: white;  /* Changed to black to contrast with a light background */
         overflow: hidden;
         border-right: .15em solid orange; /* The typewriter cursor */
         white-space: nowrap; /* Keeps the text on a single line */
@@ -88,7 +151,7 @@ if app_mode == "Home":
     }
     @keyframes blink-caret {
         from, to { border-color: black; }
-        50% { border-color: orange; }
+        50% { border-color: black; }
     }
     </style>
     <div class="typewriter">
@@ -96,20 +159,7 @@ if app_mode == "Home":
     </div>
     """, unsafe_allow_html=True)
 
-    # Background Image
-    st.markdown("""
-    <style>
-    .main {
-        background-image: url("https://cdn11.bigcommerce.com/s-tjrce8etun/product_images/uploaded_images/leave-with-fungus.jpg");
-        background-size: cover;
-        background-repeat: no-repeat;
-        padding: 50px;
-        color:white;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-
+    # Removed the background image code
     st.markdown("""
     Welcome to KRISHI AVARANAM! 🌿🔍
     
@@ -144,31 +194,32 @@ if app_mode == "Home":
 # About Project
 elif app_mode == "About":
     st.header("About")
-    st.markdown(""" #### About the Project
-                This project harnesses the power of machine learning to revolutionize plant disease detection through image analysis. By employing TensorFlow for precise model predictions and Google Generative AI for interactive chatbot support, our system is crafted to aid farmers and researchers in diagnosing plant health with unparalleled efficiency.
+    st.markdown("""
+                #### About the Project
+                This project focuses on leveraging machine learning to detect plant diseases from images. It is built using a combination of TensorFlow for model prediction and Google Generative AI for chatbot support. The system is designed to assist farmers and researchers in diagnosing plant health efficiently.
+                #### Dataset
+                The dataset used in this project is an augmented version of an original dataset, which consists of about 87K RGB images of healthy and diseased crop leaves. These images are categorized into 38 different classes, including various crops and diseases.
 
-Dataset :
-We use an enhanced dataset derived from an original collection, comprising approximately 87,000 RGB images of both healthy and diseased crop leaves. These images are meticulously categorized into 38 distinct classes, representing a wide array of crops and disease types.
+                Dataset Structure:
+                1. Train: 70295 images
+                2. Test: 33 images
+                3. Validation: 17572 images
 
-Dataset Breakdown:
+                #### Key Features
+                - Advanced ML Models: The project utilizes cutting-edge machine learning models to ensure high accuracy in disease detection.
+                - Real-time Chat Support: Integrated Google Generative AI for real-time support, helping users with their queries related to plant diseases.
 
-Training Set: 70,295 images for model training.
-Testing Set: 33 images for evaluating model performance.
-Validation Set: 17,572 images to fine-tune and validate model accuracy.
-Key Features
-State-of-the-Art ML Models: Our system employs advanced machine learning algorithms to achieve high precision in detecting plant diseases.
-Instant Chat Support: With Google Generative AI integration, users receive real-time assistance, answering queries and providing support related to plant health.
+                #### Achievements
+                - Model Optimization: Improved the model's performance and prediction accuracy by fine-tuning the architecture.
+                - User Experience: Developed an intuitive interface, making it easy for users to interact with the system.
 
-Achievements : 
-Optimized Performance: Significant enhancements in model accuracy and performance through architectural fine-tuning.
-Enhanced User Experience: A user-friendly interface designed to facilitate seamless interaction with the system, ensuring ease of use and accessibility.
-
-Future Goals : 
-
-Dataset Expansion: Broaden the dataset to include a wider variety of plant species and disease types, enhancing the model's versatility.
-Real-Time Feedback: Implement real-time data processing capabilities to deliver immediate analysis results upon image upload.
-Chatbot Enhancement: Further develop the chatbot to provide more tailored advice and personalized support for users, enriching the overall user experience.
+                #### Future Goals
+                - Expand the dataset with more diverse plant species and disease types.
+                - Integrate real-time data processing to provide instant feedback on uploaded images.
+                - Enhance the chatbot's capabilities to offer more personalized advice and support.
                 """)
+
+
 
 # Prediction Page
 elif app_mode == "Disease Recognition":
@@ -207,7 +258,7 @@ elif app_mode == "Disease Recognition":
 
 # Chat Support Page
 elif app_mode == "Chat Support":
-    st.header("Chat Support")
+    st.header("Agri LifeLine")
 
     # Initialize session state for chat history if not already present
     if "messages" not in st.session_state:
