@@ -234,7 +234,7 @@ elif app_mode == "Disease Recognition":
 
     if st.button("Predict"):
         if test_image is not None:
-            st.snow()
+            
             st.write("Our Prediction")
             result_index = model_prediction(test_image)
             # Reading Labels
